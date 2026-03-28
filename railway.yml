@@ -1,0 +1,52 @@
+name: MeetMe-Bot
+description: Telegram Dating Bot with Async Database and Payment Integration
+
+services:
+  - name: bot
+    runtime: python
+    pythonVersion: "3.12"
+    startCommand: python main.py
+    restartPolicy: ALWAYS
+    memoryLimit: 512MB
+    diskSize: 1GB
+
+    volumes:
+      - name: data
+        path: /app/data
+
+    envVariables:
+      ENVIRONMENT: production
+      PYTHON_VERSION: "3.12"
+      LOG_LEVEL: INFO
+
+    secrets:
+      - name: BOT_TOKEN
+        description: "Telegram Bot Token from @BotFather"
+      - name: ADMIN_IDS
+        description: "Comma-separated admin user IDs"
+
+plugins:
+  - name: postgres
+    type: database
+    version: "14"
+    memory: 256MB
+    disk: 1GB
+    autoProvision: false
+
+healthCheck:
+  path: /health
+  interval: 30
+  timeout: 10
+
+monitors:
+  - name: memory
+    alert: "Memory usage above 400MB"
+  - name: cpu
+    alert: "CPU usage above 80%"
+  - name: uptime
+    alert: "Bot downtime > 5 minutes"
+
+deployConfig:
+  replicas: 1
+  restartPolicy: Always
+  terminationGracePeriod: 30s
